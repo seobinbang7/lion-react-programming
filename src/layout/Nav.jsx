@@ -1,36 +1,76 @@
-import { NavLink } from 'react-router-dom';
+import { useAuth } from '@/contexts/Auth';
+import { useSideMenuStore } from '@/store/sideMenu';
+import { node, string } from 'prop-types';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 function Nav() {
+  const { isAuth, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const toggleSideMenu = useSideMenuStore((state) => state.toggleSideMenu);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
   return (
     <nav>
-      <ul className="flex gap-4 p-5 font-extralight">
+      <ul className="flex gap-5 p-5 items-center font-extralight">
+        {!isAuth && (
+          <li>
+            <Link href="/signin">Sign In</Link>
+          </li>
+        )}
+        {isAuth && (
+          <li>
+            <Link href="/product/new">NEW</Link>
+          </li>
+        )}
         <li>
-          <NavLink
-            to="/"
-            className={({ isActive }) => isActive ? 'font-semibold text-rose-600' : ''}
-          >
-            홈
-          </NavLink>
+          <Link href="/products">Products</Link>
         </li>
         <li>
-          <NavLink
-            to="/products"
-            className={({ isActive }) => isActive ? 'font-semibold text-rose-600' : ''}
-          >
-            장바구니
-          </NavLink>
+          <Link href="/assets">Assets</Link>
         </li>
         <li>
-          <NavLink
-            to="/contact"
-            className={({ isActive }) => isActive ? 'font-semibold text-rose-600' : ''}
-          >
-            주문하기
-          </NavLink>
+          <button type="button" className="uppercase" onClick={toggleSideMenu}>
+            Toggler
+          </button>
         </li>
+        {isAuth && (
+          <button
+            type="button"
+            className="py-0.5 pb-1 px-2 text-zinc-400 border border-white/40 rounded hover:border-sky-400/70 hover:text-sky-400"
+            onClick={handleSignOut}
+          >
+            Sign Out
+          </button>
+        )}
       </ul>
     </nav>
   );
 }
 
 export default Nav;
+
+function Link({ href, children }) {
+  return (
+    <NavLink
+      to={href}
+      className={({ isActive }) => {
+        const baseClassName = 'font-suit font-normal uppercase';
+        return isActive
+          ? `${baseClassName} text-sky-400 cursor-default`
+          : `${baseClassName} text-zinc-400 hover:text-slate-50`;
+      }}
+    >
+      {children}
+    </NavLink>
+  );
+}
+
+Link.propTypes = {
+  href: string.isRequired,
+  children: node.isRequired,
+};
